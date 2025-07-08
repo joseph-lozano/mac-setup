@@ -1,0 +1,53 @@
+# Taps
+tap "sst/tap"
+
+# CLI Tools
+brew "mise"
+brew "direnv"
+brew "tree"
+brew "neovim"
+brew "yt-dlp"
+brew "jq"
+brew "pre-commit"
+brew "glow"
+brew "ffmpeg"
+brew "btop"
+brew "zoxide"
+brew "fzf"
+brew "less"
+brew "stow"
+brew "bat"
+brew "fd"
+brew "eza"
+brew "starship"
+brew "ripgrep"
+brew "mas"
+brew "gh"
+brew "tldr"
+
+brew "sst/tap/opencode"
+
+# Fonts
+cask "font-intone-mono-nerd-font"
+
+# Applications
+cask "1password"
+cask "rectangle-pro"
+cask "balenaetcher"
+cask "choosy"
+cask "cursor"
+cask "discord"
+
+cask "ghostty"
+cask "google-chrome"
+cask "nvidia-geforce-now"
+cask "orbstack"
+cask "postgres-unofficial"
+cask "raycast"
+cask "screenflow"
+cask "setapp"
+cask "slack"
+cask "spotify"
+cask "steam"
+cask "vlc"
+cask "zoom"

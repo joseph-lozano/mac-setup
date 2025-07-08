@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -e
+
+# Function to print messages
+info() {
+  echo "[INFO] $1"
+}
+
+# Main setup function
+main() {
+  info "Starting macOS setup..."
+  
+  # Clone the repository
+  local repo_dir="$HOME/mac-setup"
+  
+  if [[ -d "$repo_dir" ]]; then
+    info "Repository already exists at $repo_dir, pulling latest changes..."
+    cd "$repo_dir"
+    git pull
+  else
+    info "Cloning mac-setup repository..."
+    git clone https://github.com/joseph-lozano/mac-setup.git "$repo_dir"
+    cd "$repo_dir"
+  fi
+  
+  # Make install script executable and run it
+  info "Running install script..."
+  chmod +x install
+  ./install
+  
+  info "Setup complete!"
+}
+
+# Run main function
+main
