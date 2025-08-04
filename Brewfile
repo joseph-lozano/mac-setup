@@ -35,7 +35,6 @@ cask "1password"
 cask "rectangle-pro"
 cask "balenaetcher"
 cask "choosy"
-cask "cursor"
 cask "discord"
 
 cask "ghostty"

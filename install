@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+# Add local bin to PATH for this script (gum should already be installed by setup script)
+export PATH="$PWD/bin:$PATH"
+
 # Display welcome banner
 show_banner() {
   echo ""
@@ -17,22 +20,17 @@ show_banner() {
 
 # Function to print messages
 info() {
-  echo "ℹ️  [INFO] $1"
-}
-
-# Function to print success messages
-success() {
-  echo "✅ [SUCCESS] $1"
+  gum log --prefix "[INFO]" --prefix.foreground="12" "$1"
 }
 
 # Function to print warning messages
 warning() {
-  echo "⚠️  [WARNING] $1"
+  gum log --prefix "[WARN]" --prefix.foreground="11" --message.foreground="11" "$1"
 }
 
 # Function to print step messages
 step() {
-  echo "🔧 [STEP] $1"
+  gum log --prefix "[STEP]" --prefix.foreground="14" --message.foreground="14" "$1"
 }
 
 # General install function
@@ -42,19 +40,17 @@ install() {
 
   if [[ "$mode" == "cask" ]]; then
     if ! brew list --cask "$name" >/dev/null 2>&1; then
-      info "📦 Installing $name (cask)..."
-      brew install --cask "$name"
-      success "$name installed successfully!"
+      gum spin --spinner dot --title "Installing $name (cask)..." -- brew install --cask "$name"
+      info "$name installed successfully!"
     else
-      info "✨ $name already installed (cask)"
+      info "$name already installed (cask)"
     fi
   elif [[ "$mode" == "brew" ]]; then
     if ! brew list "$name" >/dev/null 2>&1; then
-      info "🍺 Installing $name (brew)..."
-      brew install "$name"
-      success "$name installed successfully!"
+      gum spin --spinner dot --title "Installing $name (brew)..." -- brew install "$name"
+      info "$name installed successfully!"
     else
-      info "✨ $name already installed (brew)"
+      info "$name already installed (brew)"
     fi
   else
     warning "Unknown install mode: $mode"
@@ -64,48 +60,48 @@ install() {
 
 # Install Xcode Command Line Tools
 install_xcode_tools() {
-  step "🔍 Checking for Xcode Command Line Tools..."
+  step "Checking for Xcode Command Line Tools..."
   
   if ! xcode-select -p >/dev/null 2>&1; then
-    info "🛠️  Installing Xcode Command Line Tools..."
+    info "Installing Xcode Command Line Tools..."
     xcode-select --install
     
     # Wait for installation to complete
-    info "⏳ Waiting for Xcode Command Line Tools installation to complete..."
+    info "Waiting for Xcode Command Line Tools installation to complete..."
     until xcode-select -p >/dev/null 2>&1; do
       sleep 5
     done
     
-    success "Xcode Command Line Tools installed successfully"
+    info "Xcode Command Line Tools installed successfully"
   else
-    info "✨ Xcode Command Line Tools already installed"
+    info "Xcode Command Line Tools already installed"
   fi
 }
 
 # Install Homebrew
 install_homebrew() {
   if ! command -v brew >/dev/null 2>&1; then
-    step "🍺 Installing Homebrew..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    step "Installing Homebrew..."
+    gum spin --spinner dot --title "Installing Homebrew..." -- /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     # Add Homebrew to PATH for the current session if just installed
     if [[ -d "/opt/homebrew/bin" ]]; then
       eval "$('/opt/homebrew/bin/brew' shellenv)"
     elif [[ -d "/usr/local/bin" ]]; then
       eval "$('/usr/local/bin/brew' shellenv)"
     fi
-    success "Homebrew installed successfully"
+    info "Homebrew installed successfully"
   else
-    info "✨ Homebrew already installed"
+    info "Homebrew already installed"
   fi
 }
 
 # Install packages from local Brewfile
 install_packages() {
-  step "📦 Installing packages from Brewfile..."
+  step "Installing packages from Brewfile..."
   
   if [[ -f "Brewfile" ]]; then
-    brew bundle --file="Brewfile"
-    success "All packages installed from Brewfile"
+    gum spin --spinner dot --title "Installing packages from Brewfile..." -- brew bundle --file="Brewfile"
+    info "All packages installed from Brewfile"
   else
     warning "Brewfile not found, skipping package installation"
   fi
@@ -113,11 +109,11 @@ install_packages() {
 # Setup Oh My Zsh
 setup_oh_my_zsh() {
   if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-    step "🐚 Installing Oh My Zsh..."
+    step "Installing Oh My Zsh..."
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-    success "Oh My Zsh installed successfully"
+    info "Oh My Zsh installed successfully"
   else
-    info "✨ Oh My Zsh already installed"
+    info "Oh My Zsh already installed"
   fi
 }
 
@@ -125,33 +121,33 @@ setup_oh_my_zsh() {
 setup_zsh_plugins() {
   local zsh_custom="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
   
-  step "🔌 Installing Oh My Zsh plugins..."
+  step "Installing Oh My Zsh plugins..."
   
   # zsh-autosuggestions
   if [[ ! -d "$zsh_custom/plugins/zsh-autosuggestions" ]]; then
-    info "💡 Installing zsh-autosuggestions..."
+    info "Installing zsh-autosuggestions..."
     git clone https://github.com/zsh-users/zsh-autosuggestions "$zsh_custom/plugins/zsh-autosuggestions"
-    success "zsh-autosuggestions installed"
+    info "zsh-autosuggestions installed"
   else
-    info "✨ zsh-autosuggestions already installed"
+    info "zsh-autosuggestions already installed"
   fi
   
   # zsh-syntax-highlighting
   if [[ ! -d "$zsh_custom/plugins/zsh-syntax-highlighting" ]]; then
-    info "🎨 Installing zsh-syntax-highlighting..."
+    info "Installing zsh-syntax-highlighting..."
     git clone https://github.com/zsh-users/zsh-syntax-highlighting "$zsh_custom/plugins/zsh-syntax-highlighting"
-    success "zsh-syntax-highlighting installed"
+    info "zsh-syntax-highlighting installed"
   else
-    info "✨ zsh-syntax-highlighting already installed"
+    info "zsh-syntax-highlighting already installed"
   fi
   
   # zsh-completions
   if [[ ! -d "$zsh_custom/plugins/zsh-completions" ]]; then
-    info "📝 Installing zsh-completions..."
+    info "Installing zsh-completions..."
     git clone https://github.com/zsh-users/zsh-completions "$zsh_custom/plugins/zsh-completions"
-    success "zsh-completions installed"
+    info "zsh-completions installed"
   else
-    info "✨ zsh-completions already installed"
+    info "zsh-completions already installed"
   fi
 }
 
@@ -164,36 +160,72 @@ setup_dotfiles() {
   local dotfiles_dir="$(dirname "$0")/dotfiles"
   
   if [[ -d "$dotfiles_dir" ]]; then
-    step "📁 Setting up dotfiles with Stow..."
+    step "Setting up dotfiles with Stow..."
     cd "$dotfiles_dir"
     
     # Stow all packages found in dotfiles directory
     for package in */; do
       if [[ -d "$package" ]]; then
         package_name="${package%/}"
-        info "🔗 Stowing $package_name..."
-        stow -t "$HOME" "$package_name" 2>/dev/null || {
-          warning "Could not stow $package_name (files may already exist)"
-        }
+        info "Stowing $package_name..."
+        
+        # Check for existing files that would conflict
+        local conflicts=()
+        while IFS= read -r file; do
+          local target="$HOME/${file#$package/}"
+          if [[ -e "$target" && ! -L "$target" ]]; then
+            conflicts+=("$target")
+          fi
+        done < <(find "$package" -type f -o -type l | grep -v "^$package$")
+        
+        if [[ ${#conflicts[@]} -gt 0 ]]; then
+          warning "Found existing files for $package_name:"
+          for conflict in "${conflicts[@]}"; do
+            echo "   - $conflict"
+          done
+          
+          if gum confirm "Would you like to backup and replace these files?"; then
+            # Backup existing files
+            local backup_dir="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
+            mkdir -p "$backup_dir"
+            
+            for conflict in "${conflicts[@]}"; do
+              local rel_path="${conflict#$HOME/}"
+              mkdir -p "$backup_dir/$(dirname "$rel_path")"
+              mv "$conflict" "$backup_dir/$rel_path"
+              info "Backed up: $conflict -> $backup_dir/$rel_path"
+            done
+            
+            # Now stow the package
+            stow -t "$HOME" "$package_name"
+            info "$package_name stowed successfully"
+          else
+            warning "Skipping $package_name"
+          fi
+        else
+          # No conflicts, stow normally
+          stow -t "$HOME" "$package_name"
+          info "$package_name stowed successfully"
+        fi
       fi
     done
     
     cd - >/dev/null
-    success "Dotfiles setup completed"
+    info "Dotfiles setup completed"
   else
-    info "📂 No dotfiles directory found at $dotfiles_dir"
+    info "No dotfiles directory found at $dotfiles_dir"
   fi
 }
 
 # Setup Node.js via mise
 setup_nodejs() {
-  step "🟢 Setting up Node.js via mise..."
+  step "Setting up Node.js via mise..."
   
   # Install latest LTS Node.js
   if command -v mise >/dev/null 2>&1; then
-    mise install node@lts
-    mise use -g node@lts
-    success "Node.js LTS installed and set as global default"
+    mise install node@lts >/dev/null 2>&1
+    mise use -g node@lts >/dev/null 2>&1
+    info "Node.js LTS installed and set as global default"
   else
     warning "mise not found, skipping Node.js setup"
   fi
@@ -207,7 +239,7 @@ setup_nodejs() {
 
 # Configure Dock preferences
 configure_dock() {
-  step "🖥️  Configuring Dock..."
+  step "Configuring Dock..."
   defaults write com.apple.dock orientation -string "left"
   defaults write com.apple.dock autohide -bool true
   defaults write com.apple.dock autohide-delay -float 0
@@ -222,14 +254,13 @@ configure_dock() {
     '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>/System/Applications/Messages.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>' \
     '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>/Applications/Slack.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>' \
     '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>/Applications/Ghostty.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>' \
-    '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>/Applications/Cursor.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>' \
     '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>/System/Applications/App Store.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>' \
     '<dict><key>tile-data</key><dict><key>file-data</key><dict><key>_CFURLString</key><string>/System/Applications/System Settings.app</string><key>_CFURLStringType</key><integer>0</integer></dict></dict></dict>'
 }
 
 # Configure Finder preferences
 configure_finder() {
-  step "📁 Configuring Finder..."
+  step "Configuring Finder..."
   defaults write com.apple.finder ShowPathbar -bool true
   defaults write com.apple.finder ShowStatusBar -bool true
   defaults write com.apple.finder AppleShowAllFiles -bool true
@@ -240,7 +271,7 @@ configure_finder() {
 
 # Configure Trackpad preferences
 configure_trackpad() {
-  step "👆 Configuring Trackpad..."
+  step "Configuring Trackpad..."
   defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
   defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
   defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
@@ -249,19 +280,19 @@ configure_trackpad() {
 
 # Configure Keyboard preferences
 configure_keyboard() {
-  step "⌨️  Configuring Keyboard..."
+  step "Configuring Keyboard..."
   defaults write NSGlobalDomain KeyRepeat -int 2
   defaults write NSGlobalDomain InitialKeyRepeat -int 15
 }
 
 # Configure login items
 configure_login_items() {
-  step "🚀 Configuring login items..."
+  step "Configuring login items..."
   
   # Rectangle Pro - window management
   if [[ -d "/Applications/Rectangle Pro.app" ]]; then
     if osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Rectangle Pro.app", hidden:false}' >/dev/null 2>&1; then
-      success "Rectangle Pro added to login items"
+      info "Rectangle Pro added to login items"
     else
       warning "Failed to add Rectangle Pro to login items"
     fi
@@ -270,13 +301,13 @@ configure_login_items() {
   # 1Password - password manager
   if [[ -d "/Applications/1Password 7 - Password Manager.app" ]]; then
     if osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/1Password 7 - Password Manager.app", hidden:true}' >/dev/null 2>&1; then
-      success "1Password added to login items"
+      info "1Password added to login items"
     else
       warning "Failed to add 1Password to login items"
     fi
   elif [[ -d "/Applications/1Password.app" ]]; then
     if osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/1Password.app", hidden:true}' >/dev/null 2>&1; then
-      success "1Password added to login items"
+      info "1Password added to login items"
     else
       warning "Failed to add 1Password to login items"
     fi
@@ -285,7 +316,7 @@ configure_login_items() {
   # Raycast - launcher
   if [[ -d "/Applications/Raycast.app" ]]; then
     if osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Raycast.app", hidden:true}' >/dev/null 2>&1; then
-      success "Raycast added to login items"
+      info "Raycast added to login items"
     else
       warning "Failed to add Raycast to login items"
     fi
@@ -294,13 +325,13 @@ configure_login_items() {
 
 # Configure battery preferences
 configure_battery() {
-  step "🔋 Configuring battery preferences..."
+  step "Configuring battery preferences..."
   defaults write com.apple.menuextra.battery ShowPercent -string "YES"
 }
 
 # Configure Siri preferences
 configure_siri() {
-  step "🤫 Disabling Siri..."
+  step "Disabling Siri..."
   defaults write com.apple.assistant.support "Assistant Enabled" -bool false
   defaults write com.apple.Siri StatusMenuVisible -bool false
   defaults write com.apple.Siri UserHasDeclinedEnable -bool true
@@ -308,16 +339,82 @@ configure_siri() {
 
 # Configure text input preferences
 configure_text_input() {
-  step "📝 Configuring text input preferences..."
+  step "Configuring text input preferences..."
   defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
   defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
   defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
   defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
 }
 
+# Configure keyboard modifier swapping
+configure_keyboard_modifiers() {
+  step "Configuring keyboard modifier keys..."
+  
+  # Get unique external keyboards (by vendor/product ID combination)
+  local processed_keyboards=()
+  
+  while IFS= read -r line; do
+    if [[ -n "$line" ]]; then
+      # Extract vendor ID, product ID, and name
+      vendor_hex=$(echo "$line" | awk '{print $1}')
+      product_hex=$(echo "$line" | awk '{print $2}')
+      
+      # Skip if we've already processed this vendor/product combination
+      local keyboard_id="${vendor_hex}_${product_hex}"
+      if [[ " ${processed_keyboards[@]} " =~ " ${keyboard_id} " ]]; then
+        continue
+      fi
+      
+      # Extract product name (everything between AppleUserHIDEventService and AppleUserHIDEventDriver)
+      name=$(echo "$line" | sed -n 's/.*AppleUserHIDEventService[[:space:]]*\(.*\)[[:space:]]*AppleUserHIDEventDriver.*/\1/p' | xargs)
+      
+      if [[ -n "$vendor_hex" && -n "$product_hex" && -n "$name" ]]; then
+        processed_keyboards+=("$keyboard_id")
+        info "Found keyboard: $name"
+        
+        if gum confirm "Would you like to swap Option and Command keys for this keyboard?"; then
+          # Convert hex to decimal
+          vendor_int=$((vendor_hex))
+          product_int=$((product_hex))
+          
+          # Apply the modifier mapping
+          hidutil property --matching "{\"VendorID\":$vendor_int,\"ProductID\":$product_int}" --set '{
+            "UserKeyMapping": [
+              {
+                "HIDKeyboardModifierMappingSrc": 0x7000000E2,
+                "HIDKeyboardModifierMappingDst": 0x7000000E3
+              },
+              {
+                "HIDKeyboardModifierMappingSrc": 0x7000000E3,
+                "HIDKeyboardModifierMappingDst": 0x7000000E2
+              },
+              {
+                "HIDKeyboardModifierMappingSrc": 0x7000000E6,
+                "HIDKeyboardModifierMappingDst": 0x7000000E7
+              },
+              {
+                "HIDKeyboardModifierMappingSrc": 0x7000000E7,
+                "HIDKeyboardModifierMappingDst": 0x7000000E6
+              }
+            ]
+          }'
+          
+          info "Modifier keys swapped for $name"
+        else
+          info "Skipping modifier swap for $name"
+        fi
+      fi
+    fi
+  done < <(hidutil list | grep -E 'Keyboard|keyboard' | grep -v 'Apple Internal' | grep -v 'Keyboard Backlight' | grep 'AppleUserHIDEventService')
+  
+  if [[ ${#processed_keyboards[@]} -eq 0 ]]; then
+    info "No external keyboards detected"
+  fi
+}
+
 # Configure keyboard shortcuts
 configure_keyboard_shortcuts() {
-  step "⌨️  Configuring keyboard shortcuts..."
+  step "Configuring keyboard shortcuts..."
   
   # Disable Mission Control shortcuts
   defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 32 "<dict><key>enabled</key><false/></dict>"
@@ -339,7 +436,7 @@ configure_keyboard_shortcuts() {
 
 # Configure hot corners
 configure_hot_corners() {
-  step "🔥 Disabling hot corners..."
+  step "Disabling hot corners..."
   defaults write com.apple.dock wvous-tl-corner -int 1
   defaults write com.apple.dock wvous-tr-corner -int 1
   defaults write com.apple.dock wvous-bl-corner -int 1
@@ -352,61 +449,60 @@ configure_hot_corners() {
 
 # Remove GarageBand and Sound Library
 remove_garageband() {
-  step "🗑️  Removing GarageBand and Sound Library..."
+  step "Removing GarageBand and Sound Library..."
   
   if [[ -d "/Applications/GarageBand.app" ]]; then
     sudo rm -rf "/Applications/GarageBand.app"
-    success "GarageBand removed"
+    info "GarageBand removed"
   fi
   
   if [[ -d "/Library/Application Support/GarageBand" ]]; then
     sudo rm -rf "/Library/Application Support/GarageBand"
-    success "GarageBand support files removed"
+    info "GarageBand support files removed"
   fi
   
   if [[ -d "/Library/Audio/Apple Loops" ]]; then
     sudo rm -rf "/Library/Audio/Apple Loops"
-    success "Apple Loops removed"
+    info "Apple Loops removed"
   fi
   
   if [[ -d "/System/Library/Components/DLSMusicDevice.component" ]]; then
-    info "🔒 System audio components preserved (required by system)"
+    info "System audio components preserved (required by system)"
   fi
 }
 
 # Remove iMovie
 remove_imovie() {
-  step "🗑️  Removing iMovie..."
+  step "Removing iMovie..."
   
   if [[ -d "/Applications/iMovie.app" ]]; then
     sudo rm -rf "/Applications/iMovie.app"
-    success "iMovie removed"
+    info "iMovie removed"
   fi
   
   if [[ -d "/Library/Application Support/iMovie" ]]; then
     sudo rm -rf "/Library/Application Support/iMovie"
-    success "iMovie support files removed"
+    info "iMovie support files removed"
   fi
   
   if [[ -d "$HOME/Movies/iMovie Library.imovielibrary" ]]; then
     rm -rf "$HOME/Movies/iMovie Library.imovielibrary"
-    success "iMovie library removed"
+    info "iMovie library removed"
   fi
 }
 
 # Configure computer name
 configure_computer_name() {
-  step "💻 Setting up computer name..."
+  step "Setting up computer name..."
   
-  echo "Please enter the desired computer name:"
-  read -r computer_name < /dev/tty
+  computer_name=$(gum input --placeholder "Enter desired computer name")
   
   if [[ -n "$computer_name" ]]; then
-    info "🏷️  Setting computer name to: $computer_name"
+    info "Setting computer name to: $computer_name"
     sudo scutil --set ComputerName "$computer_name"
     sudo scutil --set LocalHostName "$computer_name"
     sudo scutil --set HostName "$computer_name"
-    success "Computer name configured successfully"
+    info "Computer name configured successfully"
   else
     warning "No computer name provided, skipping..."
   fi
@@ -414,29 +510,30 @@ configure_computer_name() {
 
 # Configure Cloudflare DNS
 configure_dns() {
-  step "🌐 Configuring Cloudflare DNS (1.1.1.1)..."
+  step "Configuring Cloudflare DNS (1.1.1.1)..."
   
   # Get all network services
   while IFS= read -r service; do
     if [[ -n "$service" ]]; then
-      info "🔧 Setting DNS for: $service"
+      info "Setting DNS for: $service"
       sudo networksetup -setdnsservers "$service" 1.1.1.1 1.0.0.1
     fi
   done < <(networksetup -listallnetworkservices | grep -v "An asterisk")
   
-  success "Cloudflare DNS configured for all network interfaces"
+  info "Cloudflare DNS configured for all network interfaces"
 }
 
 
 
 # Apply all macOS configurations
 configure_macos() {
-  step "⚙️  Configuring macOS system preferences..."
+  step "Configuring macOS system preferences..."
   
   configure_dock
   configure_finder
   configure_trackpad
   configure_keyboard
+  configure_keyboard_modifiers
   configure_login_items
   configure_battery
   configure_siri
@@ -445,44 +542,28 @@ configure_macos() {
   configure_hot_corners
   
   # Restart affected applications
-  info "🔄 Restarting Dock and Finder..."
+  info "Restarting Dock and Finder..."
   killall Dock
   killall Finder
   
-  success "macOS system preferences configured"
+  info "macOS system preferences configured"
 }
 
 # Show completion message
 show_completion() {
   echo ""
-  echo "🎉 ═══════════════════════════════════════════════════════════════════════════════ 🎉"
-  echo "                                                                                    "
-  echo "                            🎊 SETUP COMPLETE! 🎊                                    "
-  echo "                                                                                    "
-  echo "    Your macOS development environment has been successfully configured! 🚀         "
-  echo "                                                                                    "
-  echo "    📋 What was installed and configured:                                          "
-  echo "       • 🛠️  Xcode Command Line Tools                                              "
-  echo "       • 🍺 Homebrew package manager                                               "
-  echo "       • 📦 Development packages from Brewfile                                     "
-  echo "       • 🐚 Oh My Zsh with useful plugins                                          "
-  echo "       • 📁 Dotfiles configuration                                                 "
-  echo "       • 🟢 Node.js LTS via mise                                                   "
-  echo "       • 🔧 Git configuration                                                      "
-  echo "       • ⚙️  macOS system preferences                                              "
-  echo "                                                                                    "
-  echo "    🔄 Please log out and back in for all changes to take effect.                 "
-  echo "                                                                                    "
-  echo "    Happy coding! 💻✨                                                             "
-  echo "                                                                                    "
-  echo "🎉 ═══════════════════════════════════════════════════════════════════════════════ 🎉"
+  echo "╔══════════════════════════════════════════════════════════════╗"
+  echo "║                                                              ║"
+  echo "║     Log out and back in for all changes to take effect.      ║"
+  echo "║                                                              ║"
+  echo "╚══════════════════════════════════════════════════════════════╝"
   echo ""
 }
 
 # Main execution
 main() {
   show_banner
-  step "🚀 Starting macOS setup..."
+  step "Starting macOS setup..."
   
   configure_computer_name
   configure_dns

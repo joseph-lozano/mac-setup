@@ -1,34 +1,72 @@
 #!/usr/bin/env bash
 set -e
 
+# Install gum for better logging and prompts
+install_gum() {
+  # Check if gum is already in PATH or in local bin
+  if command -v gum >/dev/null 2>&1 || [[ -x "./bin/gum" ]]; then
+    return 0
+  fi
+  
+  echo "Installing gum for enhanced UI..."
+  # Create local bin directory
+  mkdir -p ./bin
+  
+  # Download gum for macOS ARM64
+  curl -L https://github.com/charmbracelet/gum/releases/download/v0.16.2/gum_0.16.2_Darwin_arm64.tar.gz -o /tmp/gum.tar.gz
+  
+  # Extract to temporary directory first
+  mkdir -p /tmp/gum_extract
+  tar -xzf /tmp/gum.tar.gz -C /tmp/gum_extract
+  
+  # Move gum binary from the versioned directory
+  mv /tmp/gum_extract/gum_*/gum ./bin/
+  chmod +x ./bin/gum
+  
+  # Clean up extraction directory
+  rm -rf /tmp/gum_extract
+  
+  # Clean up
+  rm -rf /tmp/gum.tar.gz
+  echo "Gum installed successfully to ./bin/gum"
+}
+
 # Function to print messages
 info() {
-  echo "[INFO] $1"
+  gum log --prefix "[INFO]" --prefix.foreground="12" "$1"
 }
 
 # Main setup function
 main() {
-  info "Starting macOS setup..."
-  
   # Clone the repository
   local repo_dir="$HOME/mac-setup"
   
   if [[ -d "$repo_dir" ]]; then
-    info "Repository already exists at $repo_dir, pulling latest changes..."
     cd "$repo_dir"
+    # Install gum first
+    install_gum
+    # Add local bin to PATH for this script
+    export PATH="$PWD/bin:$PATH"
+    
+    info "Repository already exists at $repo_dir, pulling latest changes..."
     git pull
   else
-    info "Cloning mac-setup repository..."
     git clone https://github.com/joseph-lozano/mac-setup.git "$repo_dir"
     cd "$repo_dir"
+    # Install gum first
+    install_gum
+    # Add local bin to PATH for this script
+    export PATH="$PWD/bin:$PATH"
+    
+    info "Cloning complete"
   fi
+  
+  info "Starting macOS setup..."
   
   # Make install script executable and run it
   info "Running install script..."
   chmod +x install
   ./install
-  
-  info "Setup complete!"
 }
 
 # Run main function

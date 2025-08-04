@@ -27,7 +27,6 @@ curl -fsSL https://raw.githubusercontent.com/joseph-lozano/mac-setup/main/setup 
 - Development tools and applications via Brewfile
 - Git configuration
 - Zsh shell configuration with Starship prompt
-- Cursor editor settings and extensions
 - Dotfiles setup
 
 ## Requirements

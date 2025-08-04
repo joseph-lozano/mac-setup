@@ -1,6 +1,7 @@
 [user]
 	name = Joseph Lozano
 	email = joseph@hey.com
+	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIANVfta972guG1JXAiGa9x64dsBShEbDL4ps7Yxqb9I+
 
 [core]
 	editor = nvim
@@ -46,3 +47,9 @@
 
 [alias]
 	hist = log --pretty=format:'%C(yellow)[%ad]%C(reset) %C(green)[%h]%C(reset) | %C(red)%s %C(bold red){{%an}}%C(reset) %C(blue)%d%C(reset)' --graph --date=short
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+[commit]
+	gpgsign = true
