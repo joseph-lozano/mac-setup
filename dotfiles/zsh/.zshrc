@@ -91,3 +91,10 @@ setopt SHARE_HISTORY
 # Key bindings for history substring search
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
+
+export PATH="$HOME/bin:$PATH"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/joseph/.lmstudio/bin"
+# End of LM Studio CLI section
+
